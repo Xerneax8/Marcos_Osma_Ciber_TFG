@@ -324,18 +324,13 @@ def generate_prompt_code(complete_path):
 def main():
     # Get all arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument("-d", "--directory", help="Directory where the script will take the folders of the challenges")
-    parser.add_argument("-n", "--number", help="Number of copies of each challenge")
-    parser.add_argument("-r", "--retries", help="Times that the script try to fix the issues of the LLM")
-    if len(sys.argv) == 1:
-        sys.stderr.write('ERROR: No arguments provided...')
-        sys.stderr.write("\n")
-        parser.print_help(sys.stderr)
-        sys.exit(1)
+    parser.add_argument("-d", "--directory", nargs="*", default=".", help="Directory where the script will take the folders of the challenges. Default value: Current Directory")
+    parser.add_argument("-n", "--number",nargs="*", default="1",  help="Number of copies of each challenge, it should be at least 1. Default value: 1")
+    parser.add_argument("-r", "--retries", nargs="*", default="0", help="Times that the script try to fix the issues of the LLM. Default value: 0")
     args = parser.parse_args()
-    num_versions = int(args.number)
-    max_retries = int(args.retries)
-    directory_args = args.directory
+    num_versions = int(args.number[0])
+    max_retries = int(args.retries[0])
+    directory_args = args.directory[0]
 
     if num_versions <= 0:
         print("Number of versions should be greater than zero...")
