@@ -324,9 +324,14 @@ def generate_prompt_code(complete_path):
 def main():
     # Get all arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument("-d", "--directory")
-    parser.add_argument("-n", "--number")
-    parser.add_argument("-r", "--retries")
+    parser.add_argument("-d", "--directory", help="Directory where the script will take the folders of the challenges")
+    parser.add_argument("-n", "--number", help="Number of copies of each challenge")
+    parser.add_argument("-r", "--retries", help="Times that the script try to fix the issues of the LLM")
+    if len(sys.argv) == 1:
+        sys.stderr.write('ERROR: No arguments provided...')
+        sys.stderr.write("\n")
+        parser.print_help(sys.stderr)
+        sys.exit(1)
     args = parser.parse_args()
     num_versions = int(args.number)
     max_retries = int(args.retries)
@@ -379,7 +384,7 @@ def main():
                     llm_text = call_ai(result)
                     parser_ai(llm_text,
                               dir_versions_complete_path / (
-                                          str(directory) + f"-{num + 1}") / "src" / "main" / "resources")
+                                      str(directory) + f"-{num + 1}") / "src" / "main" / "resources")
 
                     ret_str = check_deployment_and_health(
                         Path(dir_versions_name) / Path(str(directory) + f"-{num + 1}"), directory_args)
