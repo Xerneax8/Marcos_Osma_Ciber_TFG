@@ -47,17 +47,29 @@ def take_theme():
 
 
 # Parse AI response
-def parser_ai(all_text: str, directory):
+def parser_ai(all_text: str, directory: Path):
     pattern = r"([\w\-/\.]+)\n```[a-zA-Z]*\n([\s\S]*?)```"
 
     matches = re.findall(pattern, all_text)
     if not matches:
         raise ValueError("No valid file sections found in the provided text.")
 
-    for filepath, content in matches:
-        folder = directory / filepath
+    base_dir = directory.resolve()
 
-        with open(folder, "w", encoding="utf-8") as f:
+    for filepath, content in matches:
+        rel_path = Path(filepath)
+
+        # Reject absolute paths
+        if rel_path.is_absolute():
+            raise ValueError(f"Absolute paths are not allowed: {filepath}")
+
+        # Resolve and enforce sandbox
+        target_path = (base_dir / rel_path).resolve()
+        if not target_path.is_relative_to(base_dir):
+            raise ValueError(f"Path traversal attempt detected: {filepath}")
+
+        # Write file
+        with open(target_path, "w") as f:
             f.write(content.strip() + "\n")
 
 
