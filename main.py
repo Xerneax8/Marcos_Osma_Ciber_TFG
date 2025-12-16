@@ -3,7 +3,7 @@ import subprocess
 import sys
 import time
 import requests
-import config
+import configparser
 from google import genai
 import os
 import re
@@ -63,7 +63,9 @@ def parser_ai(all_text: str, directory):
 
 def call_ai(text):
     # Configuring OS to get the API Key
-    os.environ['GEMINI_API_KEY'] = config.GEMINI_API_KEY
+    config = configparser.ConfigParser()
+    config.read("config.ini")
+    os.environ['GEMINI_API_KEY'] = config["API_KEY"]["GEMINI_API_KEY"]
 
     client = genai.Client(api_key=os.environ.get('GEMINI_API_KEY'))
 
@@ -83,7 +85,9 @@ def call_ai(text):
 
 def check_ai(llm_text, error):
     # Configuring OS to get the API Key
-    os.environ['GEMINI_API_KEY'] = config.GEMINI_API_KEY
+    config = configparser.ConfigParser()
+    config.read("config.ini")
+    os.environ['GEMINI_API_KEY'] = config["API_KEY"]["GEMINI_API_KEY"]
 
     client = genai.Client(api_key=os.environ.get('GEMINI_API_KEY'))
 
@@ -325,7 +329,7 @@ def main():
     # Get all arguments
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", "--directory", nargs="*", default=".", help="Directory where the script will take the folders of the challenges. Default value: Current Directory")
-    parser.add_argument("-n", "--number",nargs="*", default="1",  help="Number of copies of each challenge, it should be at least 1. Default value: 1")
+    parser.add_argument("-n", "--number", nargs="*", default="1",  help="Number of copies of each challenge, it should be at least 1. Default value: 1")
     parser.add_argument("-r", "--retries", nargs="*", default="0", help="Times that the script try to fix the issues of the LLM. Default value: 0")
     args = parser.parse_args()
     num_versions = int(args.number[0])

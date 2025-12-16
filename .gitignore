@@ -1,4 +1,4 @@
-config.py
+config.ini
 web*/
 .idea
 __pycache__
