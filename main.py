@@ -15,6 +15,7 @@ import yaml
 
 # Get the names of the file that we are going to send to the LLM
 def get_source_files(path):
+    print("Getting source code files...")
     files_list = []
     if os.path.isdir(path / "controller"):
         list_per_directory = os.listdir(path / "controller")
@@ -216,6 +217,7 @@ def check_deployment_and_health(directory, directory_arg, timeout=60):
 
 # Read the code and return string
 def read_code(complete_path, source_files):
+    print("Reading code...")
     with open(complete_path / source_files[0][0], "r+") as f:
         text = f.read()
     f.close()
@@ -316,6 +318,7 @@ def parse_javascript(i, total_lines, lines, result):
 
 # Parse read code, reducing the number of tokens
 def parse_code(source_code):
+    print("Parsing read code...")
     lines = source_code.splitlines(keepends=True)
     result = []
     i = 0
@@ -387,10 +390,14 @@ def generate_prompt_code(complete_path):
     return read_code(complete_path, source_files)
 
 
-def check_errors(num, ret_str, llm_text, directory, dir_versions_complete_path, dir_versions_name, num_retries,
-                 directory_args, max_retries):
+# Retrying generating LLM code if errors are found
+def generate_retry(num, ret_str, llm_text, directory, dir_versions_complete_path, dir_versions_name, num_retries,
+                   directory_args, max_retries):
     # Check for errors and create new code if necessary
+    if ret_str != "OK" and num_retries > 0:
+        print("Problems were found, retrying...")
     while ret_str != "OK" and num_retries < max_retries:
+        print("Checking with AI...")
         llm_checked_text = check_ai(llm_text, ret_str)
         parser_ai(llm_checked_text,
                   dir_versions_complete_path / (
@@ -408,22 +415,24 @@ def check_errors(num, ret_str, llm_text, directory, dir_versions_complete_path, 
         print("Exercise " + str(directory) + " crafted")
 
 
+# Create the versions for the students
 def create_different_versions(result, dir_versions_complete_path, directory, dir_versions_name, directory_args,
                               num_versions, max_retries):
-    # Create the versions for the students
     for num in range(num_versions):
+        print(f"Calling AI for version {num + 1}...")
         llm_text = call_ai(result)
+        print(f"Writing LLM code for version {num + 1}...")
         parser_ai(llm_text,
                   dir_versions_complete_path / (
                       Path(str(directory) + f"-{num + 1}")) / Path(find_resources_folder(dir_versions_complete_path /
                                                                                          Path(
                                                                                              str(directory) + f"-{num + 1}"))))
-
+        print(f"Checking code for version {num + 1}...")
         ret_str = check_deployment_and_health(
             Path(dir_versions_name) / Path(str(directory) + f"-{num + 1}"), directory_args)
         num_retries = 0
-        check_errors(num, ret_str, llm_text, directory, dir_versions_complete_path, dir_versions_name, num_retries,
-                     directory_args, max_retries)
+        generate_retry(num, ret_str, llm_text, directory, dir_versions_complete_path, dir_versions_name, num_retries,
+                       directory_args, max_retries)
 
 
 def parse_arguments(parser):
@@ -441,6 +450,7 @@ def process_challenge(directory, num_versions, directory_args, max_retries):
 
     try:
         os.mkdir(dir_versions_complete_path)
+        print("Creating versions folder...")
         for num in range(num_versions):
             shutil.copytree(directory, dir_versions_complete_path / (directory + f"-{num + 1}"))
 
