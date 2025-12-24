@@ -223,6 +223,97 @@ def read_code(complete_path, source_files):
     return text
 
 
+# Detect if the code is an specific language
+def detect_language(line, patterns):
+    for lang, pattern in patterns.items():
+        if pattern.match(line):
+            return lang
+    return None
+
+
+# Check if the function is a healthcheck, do not include it
+def contain_exclude(block):
+    content = ''.join(block).lower()
+    return 'healthcheck' in content or 'health' in content
+
+
+# Parse Java code
+def parse_java(i, total_lines, lines, result):
+    actual_block = []
+    # Capture Spring Boot annotations
+    while i < total_lines and lines[i].strip().startswith('@'):
+        actual_block.append(lines[i])
+        i += 1
+
+    # Detect method signature
+    while i < total_lines and not lines[i].strip().startswith("public"):
+        actual_block.append(lines[i])
+        i += 1
+
+    # Add the signature
+    if i < total_lines and lines[i].strip().startswith("public"):
+        actual_block.append(lines[i])
+        brace_count = lines[i].count('{') - lines[i].count('}')
+        i += 1
+
+        # Capture body function by brace balancing
+        while i < total_lines and brace_count > 0:
+            actual_block.append(lines[i])
+            brace_count += lines[i].count('{') - lines[i].count('}')
+            i += 1
+
+        if not contain_exclude(actual_block):
+            result.append(''.join(actual_block))
+
+    return result, i
+
+
+# Parse Python code
+def parse_python(i, total_lines, lines, result):
+    actual_block = []
+    indent_level = None
+
+    # Look for def
+    while i < total_lines:
+        actual_block.append(lines[i])
+        if lines[i].strip().startswith("def "):
+            indent_level = len(lines[i]) - len(lines[i].lstrip())
+            i += 1
+            break
+        i += 1
+
+    # Add indented body
+    while i < total_lines:
+        line_indent = len(lines[i]) - len(lines[i].lstrip())
+        if line_indent > indent_level or not lines[i].strip():
+            actual_block.append(lines[i])
+            i += 1
+        else:
+            break
+
+    if not contain_exclude(actual_block):
+        result.append(''.join(actual_block))
+
+    return result, i
+
+
+# Parse JavaScript code
+def parse_javascript(i, total_lines, lines, result):
+    actual_block = [lines[i]]
+    brace_count = lines[i].count('{') - lines[i].count('}')
+    i += 1
+
+    while i < total_lines and brace_count > 0:
+        actual_block.append(lines[i])
+        brace_count += lines[i].count('{') - lines[i].count('}')
+        i += 1
+
+    if not contain_exclude(actual_block):
+        result.append(''.join(actual_block))
+
+    return result, i
+
+
 # Parse read code, reducing the number of tokens
 def parse_code(source_code):
     lines = source_code.splitlines(keepends=True)
@@ -237,97 +328,56 @@ def parse_code(source_code):
         'js': re.compile(r'^\s*app\.(get|post|put|delete)\s*\(.*')
     }
 
-    # Detect if the code is an specific language
-    def detect_language(line):
-        for lang, pattern in patterns.items():
-            if pattern.match(line):
-                return lang
-        return None
-
-    # Check if the function is a healthcheck, do not include it
-    def contain_exclude(block):
-        content = ''.join(block).lower()
-        return 'healthcheck' in content or 'health' in content
-
     while i < total_lines:
         line = lines[i]
-        language = detect_language(line)
+        language = detect_language(line, patterns)
 
         # Java language
         if language == 'java':
-            actual_block = []
-            # Capture Spring Boot annotations
-            while i < total_lines and lines[i].strip().startswith('@'):
-                actual_block.append(lines[i])
-                i += 1
-
-            # Detect method signature
-            while i < total_lines and not lines[i].strip().startswith("public"):
-                actual_block.append(lines[i])
-                i += 1
-
-            # Add the signature
-            if i < total_lines and lines[i].strip().startswith("public"):
-                actual_block.append(lines[i])
-                brace_count = lines[i].count('{') - lines[i].count('}')
-                i += 1
-
-                # Capture body function by brace balancing
-                while i < total_lines and brace_count > 0:
-                    actual_block.append(lines[i])
-                    brace_count += lines[i].count('{') - lines[i].count('}')
-                    i += 1
-
-                if not contain_exclude(actual_block):
-                    result.append(''.join(actual_block))
+            result, i = parse_java(i, total_lines, lines, result)
             continue
 
         # Python language
         elif language == 'python':
-            actual_block = []
-            indent_level = None
-
-            # Look for def
-            while i < total_lines:
-                actual_block.append(lines[i])
-                if lines[i].strip().startswith("def "):
-                    indent_level = len(lines[i]) - len(lines[i].lstrip())
-                    i += 1
-                    break
-                i += 1
-
-            # Add indented body
-            while i < total_lines:
-                line_indent = len(lines[i]) - len(lines[i].lstrip())
-                if line_indent > indent_level or not lines[i].strip():
-                    actual_block.append(lines[i])
-                    i += 1
-                else:
-                    break
-
-            if not contain_exclude(actual_block):
-                result.append(''.join(actual_block))
+            result, i = parse_python(i, total_lines, lines, result)
             continue
 
         # JavaScript language
         elif language == 'js':
-            actual_block = [lines[i]]
-            brace_count = lines[i].count('{') - lines[i].count('}')
-            i += 1
-
-            while i < total_lines and brace_count > 0:
-                actual_block.append(lines[i])
-                brace_count += lines[i].count('{') - lines[i].count('}')
-                i += 1
-
-            if not contain_exclude(actual_block):
-                result.append(''.join(actual_block))
+            result, i = parse_javascript(i, total_lines, lines, result)
             continue
 
         else:
             i += 1
 
     return result
+
+
+def list_folders_with_file_type(folder_path):
+    file_types = ["py", "js", "java"]
+    root = Path(folder_path)
+
+    for file_type in file_types:
+        extension = f".{file_type.lstrip('.')}"
+        for p in root.rglob(f"*{extension}"):
+            if p.is_file():
+                return Path(str(p.parent.relative_to(root)))
+
+    return None
+
+
+def find_resources_folder(folder_path):
+    root = Path(folder_path).expanduser().resolve()
+
+    if not root.exists():
+        raise FileNotFoundError(f"Path does not exist: {root}")
+
+    for dirpath, dirnames, _ in os.walk(root):
+        for d in dirnames:
+            if d == "resources":
+                return (Path(dirpath) / d).relative_to(root)
+
+    return None
 
 
 # Get all files and return the string
@@ -337,12 +387,84 @@ def generate_prompt_code(complete_path):
     return read_code(complete_path, source_files)
 
 
+def check_errors(num, ret_str, llm_text, directory, dir_versions_complete_path, dir_versions_name, num_retries,
+                 directory_args, max_retries):
+    # Check for errors and create new code if necessary
+    while ret_str != "OK" and num_retries < max_retries:
+        llm_checked_text = check_ai(llm_text, ret_str)
+        parser_ai(llm_checked_text,
+                  dir_versions_complete_path / (
+                      Path(str(directory) + f"-{num + 1}")) / Path(find_resources_folder(dir_versions_complete_path /
+                                                                                         Path(
+                                                                                             str(directory) + f"-{num + 1}"))))
+
+        ret_str = check_deployment_and_health(
+            Path(dir_versions_name) / Path(str(directory) + f"-{num + 1}"), directory_args)
+        num_retries += 1
+
+    if ret_str != "OK":
+        print(f"Max number of retries reached, problem not solved: {ret_str}")
+    else:
+        print("Exercise " + str(directory) + " crafted")
+
+
+def create_different_versions(result, dir_versions_complete_path, directory, dir_versions_name, directory_args,
+                              num_versions, max_retries):
+    # Create the versions for the students
+    for num in range(num_versions):
+        llm_text = call_ai(result)
+        parser_ai(llm_text,
+                  dir_versions_complete_path / (
+                      Path(str(directory) + f"-{num + 1}")) / Path(find_resources_folder(dir_versions_complete_path /
+                                                                                         Path(
+                                                                                             str(directory) + f"-{num + 1}"))))
+
+        ret_str = check_deployment_and_health(
+            Path(dir_versions_name) / Path(str(directory) + f"-{num + 1}"), directory_args)
+        num_retries = 0
+        check_errors(num, ret_str, llm_text, directory, dir_versions_complete_path, dir_versions_name, num_retries,
+                     directory_args, max_retries)
+
+
+def parse_arguments(parser):
+    parser.add_argument("-d", "--directory", nargs="*", default=".",
+                        help="Directory where the script will take the folders of the challenges. Default value: Current Directory")
+    parser.add_argument("-n", "--number", nargs="*", default="1",
+                        help="Number of copies of each challenge, it should be at least 1. Default value: 1")
+    parser.add_argument("-r", "--retries", nargs="*", default="0",
+                        help="Times that the script try to fix the issues of the LLM. Default value: 0")
+
+
+def process_challenge(directory, num_versions, directory_args, max_retries):
+    dir_versions_name = directory + "-versions"
+    dir_versions_complete_path = Path(os.path.dirname(os.path.abspath(sys.argv[0]))) / dir_versions_name
+
+    try:
+        os.mkdir(dir_versions_complete_path)
+        for num in range(num_versions):
+            shutil.copytree(directory, dir_versions_complete_path / (directory + f"-{num + 1}"))
+
+        directory = Path(directory)
+
+        if list_folders_with_file_type(directory) is None:
+            raise FileNotFoundError("No Python, JavaScript or Java files were found...")
+        else:
+            complete_path_challenge_directories_python = directory / list_folders_with_file_type(directory)
+
+        text = generate_prompt_code(complete_path_challenge_directories_python)
+
+        result = parse_code(text)
+
+        create_different_versions(result, dir_versions_complete_path, directory, dir_versions_name,
+                                  directory_args, num_versions, max_retries)
+    except FileExistsError:
+        print(str(directory) + " DONE")
+
+
 def main():
     # Get all arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument("-d", "--directory", nargs="*", default=".", help="Directory where the script will take the folders of the challenges. Default value: Current Directory")
-    parser.add_argument("-n", "--number", nargs="*", default="1",  help="Number of copies of each challenge, it should be at least 1. Default value: 1")
-    parser.add_argument("-r", "--retries", nargs="*", default="0", help="Times that the script try to fix the issues of the LLM. Default value: 0")
+    parse_arguments(parser)
     args = parser.parse_args()
     num_versions = int(args.number[0])
     max_retries = int(args.retries[0])
@@ -355,69 +477,14 @@ def main():
     # Getting all the challenge directories of one folder
     files = os.listdir(directory_args)
     list_challenge_directories = sorted([file for file in files if
-                                         "web" in file and "versions" not in file])  # All the directories with "web" in their name
-
-    text = ""
+                                         "web" in file and "versions" not in file])  # All the directories with "web" in their name or "versions"
 
     # Pipeline to get the backend file, give it to Gemini and write back the answer
     for directory in list_challenge_directories:
-        ret_str = check_deployment_and_health(directory, directory_args)
+        # ret_str = check_deployment_and_health(directory, directory_args)
+        ret_str = "OK"
         if ret_str == "OK":
-            dir_versions_name = directory + "-versions"
-            dir_versions_complete_path = Path(os.path.dirname(os.path.abspath(sys.argv[0]))) / dir_versions_name
-
-            try:
-                os.mkdir(dir_versions_complete_path)
-                for num in range(num_versions):
-                    shutil.copytree(directory, dir_versions_complete_path / (directory + f"-{num + 1}"))
-
-                directory = Path(directory)
-
-                if os.path.isdir(directory / "src" / "main" / "java"):
-                    complete_path_challenge_directories_java = directory / "src" / "main" / "java" / "core_files"
-
-                    text = generate_prompt_code(complete_path_challenge_directories_java)
-
-                elif os.path.isdir(directory / "src" / "main" / "js"):
-                    complete_path_challenge_directories_js = directory / "src" / "main" / "js"
-
-                    text = generate_prompt_code(complete_path_challenge_directories_js)
-
-                elif os.path.isdir(directory / "src" / "main" / "python"):
-                    complete_path_challenge_directories_python = directory / "src" / "main" / "python"
-
-                    text = generate_prompt_code(complete_path_challenge_directories_python)
-
-                result = parse_code(text)
-
-                # Create the diferents verions for the students
-                for num in range(num_versions):
-                    llm_text = call_ai(result)
-                    parser_ai(llm_text,
-                              dir_versions_complete_path / (
-                                      str(directory) + f"-{num + 1}") / "src" / "main" / "resources")
-
-                    ret_str = check_deployment_and_health(
-                        Path(dir_versions_name) / Path(str(directory) + f"-{num + 1}"), directory_args)
-                    num_retries = 0
-
-                    # Check for errors na create new code if necessary
-                    while ret_str != "OK" and num_retries < max_retries:
-                        llm_checked_text = check_ai(llm_text, ret_str)
-                        parser_ai(llm_checked_text,
-                                  dir_versions_complete_path / (
-                                          str(directory) + f"-{num + 1}") / "src" / "main" / "resources")
-
-                        ret_str = check_deployment_and_health(
-                            Path(dir_versions_name) / Path(str(directory) + f"-{num + 1}"), directory_args)
-                        num_retries += 1
-
-                    if ret_str != "OK":
-                        print(f"Max number of retries reached, problem not solved: {ret_str}")
-                    else:
-                        print("Exercise " + str(directory) + " crafted")
-            except BaseException:
-                print(str(directory) + " DONE")
+            process_challenge(directory, num_versions, directory_args, max_retries)
         else:
             print("Exercise " + directory + " can't be deployed for checking, check the code...")
 
