@@ -30,7 +30,7 @@ def main():
         if ret_str == "OK":
             process_challenge(directory, num_versions, directory_args, max_retries)
         else:
-            print("Exercise " + directory + " can't be deployed for checking, check the code...")
+            print(f"Exercise " + directory + f" can't be deployed for checking, check the code...\nError: {ret_str}")
 
 
 if __name__ == "__main__":

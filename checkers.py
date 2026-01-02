@@ -2,8 +2,6 @@ import os
 import subprocess
 import time
 from pathlib import Path
-import requests
-import yaml
 
 from AI import check_ai, parser_ai
 from util import find_resources_folder
@@ -25,47 +23,6 @@ def check_deployment_and_health(directory, directory_arg, timeout=60):
         return False
 
     try:
-        # Parse docker-compose.yml
-        with open(compose_path, "r") as f:
-            compose_data = yaml.safe_load(f)
-
-        services = compose_data.get("services", {})
-        if not services:
-            print("Error: No services defined in docker-compose.yml.")
-            return False
-
-        # Get the first service
-        service_name, service_data = next(iter(services.items()))
-        ports = service_data.get("ports", [])
-        healthcheck = service_data.get("healthcheck", {}).get("test", [])
-
-        if not ports:
-            print("Error: No ports defined in service.")
-            return False
-
-        # Extract host port (the part AFTER ":")
-        port_mapping = ports[0]
-        parts = port_mapping.split(":")
-        if len(parts) != 2:
-            print(f"Invalid port mapping format: {port_mapping}")
-            return False
-
-        host_port, container_port = parts  # "12104:8080"
-        host_port = host_port.strip().strip('"').strip("'")
-
-        # Extract healthcheck URL if defined, else default
-        health_url = None
-        for part in healthcheck:
-            if part.startswith("http"):
-                health_url = part.replace(container_port, host_port)
-                break
-
-        if not health_url:
-            # Fallback default
-            health_url = f"http://localhost:{host_port}/health"
-
-        print(f"Using healthcheck URL: {health_url}")
-
         os.chdir(Path(directory_arg) / Path(directory))
         print(f"Changed to directory: {os.getcwd()}")
 
@@ -75,18 +32,35 @@ def check_deployment_and_health(directory, directory_arg, timeout=60):
         print("Deployment script executed successfully.")
 
         # --- Poll health endpoint ---
-        print(f"Checking health at {health_url} (timeout: {timeout}s)")
+        print(f"Checking container health via docker ps (timeout: {timeout}s)")
         start_time = time.time()
 
         while time.time() - start_time < timeout:
             try:
-                resp = requests.get(health_url, timeout=5)
-                if resp.ok:
-                    print(f"Health check PASSED with status {resp.status_code}")
-                    return "OK"
-                print(f"Health check returned status {resp.status_code}, retrying...")
-            except requests.RequestException:
+                result = subprocess.run(
+                    ["docker", "ps", "--format", "{{.Status}}"],
+                    capture_output=True,
+                    text=True,
+                    check=True
+                )
+
+                statuses = result.stdout.strip().splitlines()
+
+                for status in statuses:
+                    if "healthy" in status:
+                        print(f"Health check PASSED: {status}")
+                        return "OK"
+                    elif "unhealthy" in status:
+                        print(f"Health check FAILED: {status}")
+                        return "UNHEALTHY"
+                    elif "starting" in status:
+                        print(f"Container starting: {status}")
+
                 print("Container not ready yet, retrying...")
+
+            except subprocess.SubprocessError as e:
+                print(f"Docker command failed, retrying... ({e})")
+
             time.sleep(3)
 
         print(f"Health check FAILED after {timeout} seconds.")
