@@ -6,6 +6,8 @@ to be used in cybersecurity challenges for students.
 The program can process three backend languages at the moment: Python, Java and JavaScript and the only thing left to do should be 
 the frontend part of the challenge.
 
+Note: Only works on Linux.
+
 ## Project Structure
 The "challenges" folder should contain one folder per challenge that has to be processed.
 
