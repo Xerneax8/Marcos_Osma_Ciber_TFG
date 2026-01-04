@@ -24,7 +24,7 @@ def create_different_versions(result, dir_versions_complete_path, directory, dir
                                                                                              str(directory) + f"-{num + 1}"))))
         print(f"Checking code for version {num + 1}...")
         ret_str = check_deployment_and_health(
-            Path(dir_versions_name) / Path(str(directory) + f"-{num + 1}"), directory_args)
+            Path(dir_versions_name) / Path(str(directory) + f"-{num + 1}"))
         num_retries = 0
         generate_retry(num, ret_str, llm_text, directory, dir_versions_complete_path, dir_versions_name, num_retries,
                        directory_args, max_retries)
@@ -34,25 +34,25 @@ def create_different_versions(result, dir_versions_complete_path, directory, dir
 def process_challenge(directory, num_versions, directory_args, max_retries):
     dir_versions_name = directory + "-versions"
     dir_versions_complete_path = Path(os.path.dirname(os.path.abspath(sys.argv[0]))) / dir_versions_name
+    directory_name = directory
+    directory_og_path = Path(directory_args) / Path(directory)
 
     try:
         os.mkdir(dir_versions_complete_path)
         print("Creating versions folder...")
         for num in range(num_versions):
-            shutil.copytree(directory, dir_versions_complete_path / (directory + f"-{num + 1}"))
+            shutil.copytree(directory_og_path, dir_versions_complete_path / (directory_name + f"-{num + 1}"))
 
-        directory = Path(directory)
-
-        if list_folders_with_file_type(directory) is None:
+        if list_folders_with_file_type(directory_og_path) is None:
             raise FileNotFoundError("No Python, JavaScript or Java files were found...")
         else:
-            complete_path_challenge_directories_python = directory / list_folders_with_file_type(directory)
+            complete_path_challenge_directories_python = directory_og_path / list_folders_with_file_type(directory_og_path)
 
         text = generate_prompt_code(complete_path_challenge_directories_python)
 
         result = parse_code(text)
 
-        create_different_versions(result, dir_versions_complete_path, directory, dir_versions_name,
+        create_different_versions(result, dir_versions_complete_path, directory_name, dir_versions_name,
                                   directory_args, num_versions, max_retries)
     except FileExistsError:
         print(str(directory) + " DONE")

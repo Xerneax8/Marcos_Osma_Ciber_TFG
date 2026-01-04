@@ -49,7 +49,7 @@ def call_ai(text):
             "role": "user",
             "parts": [{
                 "text": f"Create a {take_style()} frontend for this backend with theme {take_theme()} (invent fake data if necessary), retrieve all the necessary html, js and css"
-                        f" (only use percentages here) retrieve only the code and a line above it indicating static/name"
+                        f" (only use percentages here) retrieve only the code, no images, and a line above it indicating static/name"
                         f" or template/name, this last one is important, ignore the healthcheck and if a file misses. {text}"
             }]
         }]

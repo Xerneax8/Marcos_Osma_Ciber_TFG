@@ -1,5 +1,6 @@
 import os
 import argparse
+from pathlib import Path
 
 from challenges import process_challenge
 from checkers import check_deployment_and_health
@@ -26,7 +27,7 @@ def main():
 
     # Pipeline to get the backend file, give it to Gemini and write back the answer
     for directory in list_challenge_directories:
-        ret_str = check_deployment_and_health(directory, directory_args)
+        ret_str = check_deployment_and_health(Path(directory_args) / Path(directory))
         if ret_str == "OK":
             process_challenge(directory, num_versions, directory_args, max_retries)
         else:

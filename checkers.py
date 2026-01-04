@@ -7,7 +7,7 @@ from AI import check_ai, parser_ai
 from util import find_resources_folder
 
 
-def check_deployment_and_health(directory, directory_arg, timeout=60):
+def check_deployment_and_health(directory, timeout=60):
     """
     Deploys a Docker container using a shell script and checks its health endpoint.
     Automatically reads the healthcheck URL and correct port (host-side) from docker-compose.yml.
@@ -17,13 +17,13 @@ def check_deployment_and_health(directory, directory_arg, timeout=60):
         print("Error: PWD environment variable not set.")
         return False
 
-    compose_path = os.path.join(Path(directory_arg) / Path(directory), "docker-compose.yml")
+    compose_path = os.path.join(Path(directory), "docker-compose.yml")
     if not os.path.exists(compose_path):
         print(f"Error: docker-compose.yml not found in {directory}")
         return False
 
     try:
-        os.chdir(Path(directory_arg) / Path(directory))
+        os.chdir(Path(directory))
         print(f"Changed to directory: {os.getcwd()}")
 
         # --- Run deployment script ---
@@ -96,7 +96,7 @@ def generate_retry(num, ret_str, llm_text, directory, dir_versions_complete_path
                                                                                              str(directory) + f"-{num + 1}"))))
 
         ret_str = check_deployment_and_health(
-            Path(dir_versions_name) / Path(str(directory) + f"-{num + 1}"), directory_args)
+            Path(dir_versions_name) / Path(str(directory) + f"-{num + 1}"))
         num_retries += 1
 
     if ret_str != "OK":
