@@ -9,7 +9,7 @@ the frontend part of the challenge.
 Note: Only works on Linux.
 
 ## Project Structure
-The "challenges" folder should contain one folder per challenge that has to be processed.
+The "challenges" folder should contain one folder per challenge that has to be processed. Each individual challenge folder must include "web" on its name.
 
 Any challenge should include Docker files to check the project on a controlled environment. Docker files that are mandatory:
 "docker-challenge.sh", with the docker compose commands, "docker-compose.yml" with the instructions to compose the docker and a "Dockerfile"
