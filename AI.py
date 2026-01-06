@@ -50,8 +50,7 @@ def call_ai(text):
             "parts": [{
                 "text": f"Create a {take_style()} frontend for this backend with theme {take_theme()} (invent fake data if necessary), retrieve all the necessary html, js and css"
                         f" (only use percentages here) retrieve only the code, no images, and a line above it indicating static/name"
-                        f" or template/name, this last one is important, ignore the healthcheck and if a file misses. Do not use any code endpoints on the HTML to access the CSS or"
-                        f" JS, just reference their name. {text}"
+                        f" or template/name, the line above them is really important, do not use templates if not necessary, ignore the healthcheck and if a file misses. Do not include new functionality with JS, just esthetically.\n{text}"
             }]
         }]
     ).text
