@@ -1,25 +1,34 @@
-import os
-
+from parsers import parse_code
 
 # Get the names of the file that we are going to send to the LLM
 def get_source_files(path):
     print("Getting source code files...")
-    files_list = []
-    if os.path.isdir(path / "controller"):
-        list_per_directory = os.listdir(path / "controller")
-        files_list.append([file for file in list_per_directory if "Web" in file])
-    else:
-        list_per_directory = os.listdir(path)
-        files_list.append([file for file in list_per_directory if "Web" in file])
-    return files_list
+    files_list = [str(p.resolve()) for p in path.rglob("*") if p.suffix in {".py", ".java", ".js"}]
+    endpoint_file_list = []
+    for file in files_list:
+        if detect_endpoint_file(file):
+            endpoint_file_list.append(file)
+
+    return endpoint_file_list
+
+def detect_endpoint_file(file_path):
+    with open(file_path, "r") as f:
+        endpoint_code = f.read()
+    f.close()
+    result = parse_code(endpoint_code)
+
+    return result
 
 
 # Read the code and return string
-def read_code(complete_path, source_files):
+def read_code(source_files):
     print("Reading code...")
-    with open(complete_path / source_files[0][0], "r+") as f:
-        text = f.read()
-    f.close()
+
+    text = ""
+    for file in source_files:
+        with open(file, "r+") as f:
+            text += f.read() + "\n"
+        f.close()
 
     return text
 
@@ -28,4 +37,4 @@ def read_code(complete_path, source_files):
 def generate_prompt_code(complete_path):
     source_files = get_source_files(complete_path)
 
-    return read_code(complete_path, source_files)
+    return read_code(source_files)

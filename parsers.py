@@ -106,6 +106,10 @@ def parse_code(source_code):
         'java': re.compile(r'^\s*@(?:Get|Post|Put|Delete|Request)Mapping'),
         'js': re.compile(r'^\s*app\.(get|post|put|delete)\s*\(.*')
     }
+     # Detect if AI should use CRSF tokens on the forms
+    csrf_pattern = r"csrf.*\n"
+    csrf_text = re.findall(csrf_pattern, source_code, flags=re.IGNORECASE)
+    result.append(csrf_text)
 
     while i < total_lines:
         line = lines[i]

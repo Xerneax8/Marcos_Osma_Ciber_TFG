@@ -14,8 +14,7 @@ from util import find_resources_folder, list_folders_with_file_type
 def create_different_versions(result, dir_versions_complete_path, directory, dir_versions_name, directory_args,
                               num_versions, max_retries):
     for num in range(num_versions):
-        print(f"Calling AI for version {num + 1}...")
-        llm_text = call_ai(result)
+        llm_text = call_ai(result, num)
         print(f"Writing LLM code for version {num + 1}...")
         parser_ai(llm_text,
                   dir_versions_complete_path / (

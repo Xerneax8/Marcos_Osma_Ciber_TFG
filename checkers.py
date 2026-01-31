@@ -2,6 +2,7 @@ import os
 import subprocess
 import time
 from pathlib import Path
+import shutil
 
 from AI import check_ai, parser_ai
 from util import find_resources_folder
@@ -21,6 +22,9 @@ def check_deployment_and_health(directory, timeout=60):
     if not os.path.exists(compose_path):
         print(f"Error: docker-compose.yml not found in {directory}")
         return False
+
+    if shutil.which("docker") is None:
+        return "ERROR: Docker is not installed or not in PATH."
 
     try:
         os.chdir(Path(directory))
@@ -47,12 +51,14 @@ def check_deployment_and_health(directory, timeout=60):
                 statuses = result.stdout.strip().splitlines()
 
                 for status in statuses:
-                    if "healthy" in status:
-                        print(f"Health check PASSED: {status}")
-                        return "OK"
-                    elif "unhealthy" in status:
+                    if "unhealthy" in status:
                         print(f"Health check FAILED: {status}")
                         return "UNHEALTHY"
+
+                    elif  "healthy" in status:
+                        print(f"Health check PASSED: {status}")
+                        return "OK"
+
                     elif "starting" in status:
                         print(f"Container starting: {status}")
 
@@ -101,5 +107,3 @@ def generate_retry(num, ret_str, llm_text, directory, dir_versions_complete_path
 
     if ret_str != "OK":
         print(f"Max number of retries reached, problem not solved: {ret_str}")
-    else:
-        print("Exercise " + str(directory) + " crafted")
