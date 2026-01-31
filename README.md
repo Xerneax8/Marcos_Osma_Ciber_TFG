@@ -16,7 +16,7 @@ Any challenge should include Docker files to check the project on a controlled e
 where the docker is described. This files should be just under the root of the challenge.
 
 Lastly, it should include a folder named "resources" on any part of the challenge where the code should take the frontend. In that folder, the
-LLM code would be written when crafted.
+LLM code would be written when crafted. In that folder, should exist a "static" folder, and a "templates" folder if templates are needed.
 
 ## Usage
 Firstly, it is important to get a Gemini API key to use this program (https://aistudio.google.com/api-keys).
