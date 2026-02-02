@@ -33,7 +33,8 @@ Now with the main program, it has three parameters to change a variety of things
 All of them has default values, and they could be customised. There is more info when using the -h command to get help.
 
 A basic usage of the program would be just calling the program, this would take the current directory of the script as the
-one to look for the challenges folder, it would create a single copy of the program with an AI generated frontend and it would not have any retries.
+one to look for the challenges folder, it would create a single copy of the program with an AI generated frontend and it would not have any retries. Then it will
+ask the user to input a template engine for the project if it uses one.
 
 If you want custom parameters, run the program with the arguments mentioned above, for example: ./main.py -d "/home/user/challenges" -n 2 -r 1. This 
 would take the challenges from the /home/user/challenges folder and would make 2 versions of the frontend with 1 retry if the AI fails on the first time.
