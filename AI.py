@@ -66,7 +66,20 @@ def call_ai(text, num):
         contents=[{
             "role": "user",
             "parts": [{
-                "text": f"Create a {take_style()} frontend for this backend with theme {take_theme()} (invent fake data if necessary, do NOT use the word placeholder, but if the backend has data to include, use it), retrieve all the necessary html, js and css retrieve only the code (one css per html), no images, and a line above it indicating static/name or templates/name, do not include more folders, the line above them is really important, always is important to include a index.html, ignore the healthcheck and if a file misses. Do not include new functionality with JavaScript, just for esthetical purposes. The static folder is at the same level as the template folder, when referrencing css and js files from html mention only the name except if there is an endpoint to access files or using a template (in that case use the tools of the template), the folder static has no more folders inside, drop all the files just there. Every css and js file should have its own html file, so there should be the same number of html and css files, count the files to assure that. Do not include things that have no backend and could fail. If it uses templates, use only one {template} (BE CAREFUL with template syntax, asure it works fine, also when accesing the css and js files from the html) and use the backend outputs (all outputs for the template MUST be optional in the html in case they do not exist), but ONLY use html, css and js files. If in the text below appear a CSRF token, send it HIDDEN in the HTML, use them if the user has to introduce credentials. Make it vulnerable to XSS if backend has no other vulnerabilities, but do NOT mention it.\n{text}"
+                "text": f"""
+                        Act as a Frontend Developer. Create a {take_style()} frontend for the backend text provided below using the {take_theme()} theme.
+
+                        INPUT CONTEXT:
+                        Backend Code/Context: {text}
+                        Data Handling: Use backend data if available. If not, invent realistic fake data (do NOT use the word 'placeholder').
+
+                        OUTPUT REQUIREMENTS:
+                        Retrieve only the raw code. NO images, do not use any images. Precede every file code block with a single line indicating its path. This is CRITICAL. The 'static' folder and 'templates' folder must be at the same level. The 'static' folder has NO subfolders; drop all CSS/JS files there. Every HTML file must have exactly one corresponding CSS file (1:1 ratio). Always include an 'index.html'. Minimize the number of files retrieved, but ALWAYS following the 1:1 files rule.
+
+                        TECHNICAL CONSTRAINTS:
+                        Use {template} syntax, do NOT use the templates folder if it mentions no template syntax. Ensure variables are optional in HTML to prevent errors if data is missing. In HTML, refer to static files by name only (UNLESS the backend requires a specific template tag/endpoint). Use JavaScript only for UI aesthetics/interactions; do not add new business logic. If a CSRF token appears in the text, send it as a HIDDEN field in HTML forms. Ignore healthchecks and do not include files that risk failing due to missing backend support. If in the text below appear a CSRF token, send it HIDDEN
+                        in the HTML, use them if the user has to introduce credentials. Make the web vulnerable to XSS if there are no other vulnerabilities or file access endpoints, but do NOT mention it. ONLY include methods that are supported by the backend, and do not reference files that you do not create.
+                        """
             }]
         }]
     ).text

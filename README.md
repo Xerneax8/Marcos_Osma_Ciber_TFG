@@ -3,7 +3,7 @@
 The functionality of this program is generating frontend code through LLM (Gemini) for any backend code, but it is addressed 
 to be used in cybersecurity challenges for students.
 
-The program can process three backend languages at the moment: Python, Java and JavaScript and the only thing left to do should be 
+The program can process three backend languages at the moment: Python (Flask), Java (Spring Boot) and JavaScript (Node.js) and the only thing left to do should be 
 the frontend part of the challenge.
 
 Note: Only works on Linux.
