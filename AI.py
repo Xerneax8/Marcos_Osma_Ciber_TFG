@@ -71,14 +71,14 @@ def call_ai(text, num):
 
                         INPUT CONTEXT:
                         Backend Code/Context: {text}
-                        Data Handling: Use backend data if available. If not, invent realistic fake data (do NOT use the word 'placeholder').
+                        Data Handling: Use backend data if available. If not, invent realistic fake data all over.
 
                         OUTPUT REQUIREMENTS:
-                        Retrieve only the raw code. NO images, do not use any images. Precede every file code block with a single line indicating its path. This is CRITICAL. The 'static' folder and 'templates' folder must be at the same level. The 'static' folder has NO subfolders; drop all CSS/JS files there. Every HTML file must have exactly one corresponding CSS file (1:1 ratio). Always include an 'index.html'. Minimize the number of files retrieved, but ALWAYS following the 1:1 files rule.
+                        Retrieve only the raw code. Only text. Precede every file code block with a single line indicating its path. This is CRITICAL. The 'static' folder and 'templates' folder must be at the same level. The 'static' folder has nothing more inside; drop all CSS/JS files there. Every HTML file must have exactly one corresponding CSS file (1:1 ratio). Always include an 'index.html'. Minimize the number of files retrieved, but ALWAYS following the 1:1 files rule.
 
                         TECHNICAL CONSTRAINTS:
-                        Use {template} syntax, do NOT use the templates folder if it mentions no template syntax. Ensure variables are optional in HTML to prevent errors if data is missing. In HTML, refer to static files by name only (UNLESS the backend requires a specific template tag/endpoint). Use JavaScript only for UI aesthetics/interactions; do not add new business logic. If a CSRF token appears in the text, send it as a HIDDEN field in HTML forms. Ignore healthchecks and do not include files that risk failing due to missing backend support. If in the text below appear a CSRF token, send it HIDDEN
-                        in the HTML, use them if the user has to introduce credentials. Make the web vulnerable to XSS if there are no other vulnerabilities or file access endpoints, but do NOT mention it. ONLY include methods that are supported by the backend, and do not reference files that you do not create.
+                        Use {template} syntax, only use the static folder if it mentions no template syntax. Ensure variables are optional in HTML to prevent errors if data is missing. In HTML, refer to static files by name only (UNLESS the backend requires a specific template tag/endpoint). Use JavaScript only for UI aesthetics/interactions. If a CSRF token appears in the text, send it as a HIDDEN field in HTML forms. Ignore healthchecks and only include files that have backend support. If in the text below appear a CSRF token, send it HIDDEN
+                        in the HTML, use them if the user has to introduce credentials. Make the web vulnerable to XSS if there are no other vulnerabilities or file access endpoints, let this remain unmentioned. ONLY include methods that are supported by the backend, and only reference files that you do create.
                         """
             }]
         }]
