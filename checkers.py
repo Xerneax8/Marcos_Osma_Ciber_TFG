@@ -10,8 +10,7 @@ from util import find_resources_folder
 
 def check_deployment_and_health(directory, timeout=60):
     """
-    Deploys a Docker container using a shell script and checks its health endpoint.
-    Automatically reads the healthcheck URL and correct port (host-side) from docker-compose.yml.
+    Deploys a Docker container using a shell script and checks its health.
     """
     parent_directory = os.getcwd()
     if not parent_directory:
