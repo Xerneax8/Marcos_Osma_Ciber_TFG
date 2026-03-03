@@ -25,13 +25,16 @@ def main():
     list_challenge_directories = sorted([file for file in files if
                                          "web" in file and "versions" not in file])  # All the directories with "web" in their name or "versions"
 
-    # Pipeline to get the backend file, give it to Gemini and write back the answer
-    for directory in list_challenge_directories:
-        ret_str = check_deployment_and_health(Path(directory_args) / Path(directory))
-        if ret_str == "OK":
-            process_challenge(directory, num_versions, directory_args, max_retries)
-        else:
-            print(f"Exercise " + directory + f" can't be deployed for checking, check the code...\nError: {ret_str}")
+    if len(list_challenge_directories) == 0:
+        print("No directory with 'web' in its name...")
+    else:
+        # Pipeline to get the backend file, give it to Gemini and write back the answer
+        for directory in list_challenge_directories:
+            ret_str = check_deployment_and_health(Path(directory_args) / Path(directory))
+            if ret_str == "OK":
+                process_challenge(directory, num_versions, directory_args, max_retries)
+            else:
+                print(f"Exercise " + directory + f" can't be deployed for checking, check the code...\nError: {ret_str}")
 
 
 if __name__ == "__main__":

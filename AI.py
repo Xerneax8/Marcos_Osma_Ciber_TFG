@@ -111,7 +111,11 @@ def check_ai(llm_text, error):
             "role": "user",
             "parts": [{
                 "text": f"You give me this code and it is throwing that error, retrieve the correct code with the same"
-                        f"format, this last part is really important.\n{llm_text}\n{error}"
+                        f"format, this last part is really important."
+                        f"CODE:"
+                        f"{llm_text}"
+                        f"ERROR:"
+                        f"{error}"
             }]
         }]
     ).text
