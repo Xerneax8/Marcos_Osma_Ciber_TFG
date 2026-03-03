@@ -75,7 +75,7 @@ def call_ai(text, num):
 
                         OUTPUT REQUIREMENTS:
                         Retrieve only the raw code. Only text. 
-                        Precede every file code block with a single line indicating its path. This is CRITICAL. The 'static' folder and 'templates' folder must be at the same level. The 'static' folder has nothing more inside; drop all CSS/JS files there. 
+                        Precede every file code block with a single line indicating its path (e.g, static/file.html or templates/file.html). This is CRITICAL. The 'static' folder and 'templates' folder must be at the same level. The 'static' folder has nothing more inside; drop all CSS/JS files there. 
                         Every HTML file must have exactly one corresponding CSS file (1:1 ratio). 
                         Always include an 'index.html'. 
                         Minimize the number of files retrieved, but ALWAYS following the 1:1 files rule.
