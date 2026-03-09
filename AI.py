@@ -10,7 +10,7 @@ from util import take_style, take_theme
 # Parse AI response
 def parser_ai(all_text: str, directory: Path):
     all_text = all_text.replace("`", "")
-    pattern = r"(?:^|\n)((?:static|templates)\/[^\n]+)\n([\s\S]*?)(?=\n(?:static|templates)\/)"
+    pattern = r"([^\n]+\.(?:html|css))\s*\n\s*(?:html|css)\s*\n([\s\S]*?)(?=\n[^\n]+\.(?:html|css)\s*\n\s*(?:html|css)|\Z)"
 
     matches = re.findall(pattern, all_text)
     if not matches:
@@ -68,28 +68,31 @@ def call_ai(text, num):
             "parts": [{
                 "text": f"""
                         Act as a Frontend Developer. Create a {take_style()} frontend for the backend text provided below using the {take_theme()} theme.
-
+                        
                         INPUT CONTEXT:
                         Backend Code/Context: {text}
                         Data Handling: Use backend data if available. If not, invent realistic fake data all over.
-
+                        
                         OUTPUT REQUIREMENTS:
                         Retrieve only the raw code. Only text. 
-                        Precede every file code block with a single line indicating its path (e.g, static/file.html or templates/file.html). This is CRITICAL. The 'static' folder and 'templates' folder must be at the same level. The 'static' folder has nothing more inside; drop all CSS/JS files there. 
-                        Every HTML file must have exactly one corresponding CSS file (1:1 ratio). 
+                        Precede every file code block with a single line indicating its path (e.g, static/file.html or templates/file.html). This is CRITICAL. The 'static' folder has nothing more inside. Do not indicate the type of the file before creating it.
+                        Every HTML file must have exactly one corresponding CSS file (1:1 ratio). IMPORTANT.
                         Always include an 'index.html'. 
-                        Minimize the number of files retrieved, but ALWAYS following the 1:1 files rule.
-
+                        Implement each file independently.
+                        Design the website using text-only content.
+                        Minimize the number of output files.
+                        
                         TECHNICAL CONSTRAINTS:
-                        Use {template} syntax, only use the static folder if it mentions no template syntax. 
-                        Ensure variables are optional in HTML to prevent errors if data is missing. 
-                        In HTML, refer to static files by name only (UNLESS the backend requires a specific template tag/endpoint). 
-                        Use JavaScript only for UI aesthetics/interactions. 
-                        If a CSRF token appears in the text, send it as a HIDDEN field in HTML forms. 
-                        Ignore healthchecks and only include files that have backend support.
-                        in the HTML, use them if the user has to introduce credentials. 
+                        Use {template} syntax, use the static folder if it mentions no template syntax. 
+                        Ensure variables are optional in HTML. And minimize the number of variable sif using a template.
+                        The variable name form should be avoided in HTML, and avoid block titles.
+                        Use JavaScript only for UI aesthetics. 
+                        If a CSRF token appears in the text, send it as a HIDDEN field in HTML forms in the HTML, use them if the user has to introduce credentials. REALLY IMPORTANT to be hidden with HTML tag.
+                        Ignore healthchecks.
+                        Always give feedback if there is a login if the login was succesful or not.
                         Make the web vulnerable to XSS if there are no other vulnerabilities or file access endpoints, let this remain unmentioned. 
                         ONLY include methods that are supported by the backend, and only reference files that you do create.
+                        Only include response from functions on the web if the web is using templates, take it on account from above.
                         """
             }]
         }]
