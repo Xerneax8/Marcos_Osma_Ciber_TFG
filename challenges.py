@@ -51,7 +51,10 @@ def process_challenge(directory, num_versions, directory_args, max_retries):
 
         result = parse_code(text)
 
-        create_different_versions(result, dir_versions_complete_path, directory_name, dir_versions_name,
+        if not result:
+            print("Code files do not contain any valid section...")
+        else:
+            create_different_versions(result, dir_versions_complete_path, directory_name, dir_versions_name,
                                   directory_args, num_versions, max_retries)
     except FileExistsError:
         print(str(directory) + " DONE")
