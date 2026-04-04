@@ -4,6 +4,7 @@ import configparser
 import os
 from pathlib import Path
 
+from quality import analyze_web_code
 from util import take_style, take_theme
 
 
@@ -44,6 +45,7 @@ def parser_ai(all_text: str, directory: Path):
         # Write file
         with open(target_path, "w") as f:
             f.write(content.strip() + "\n")
+        analyze_web_code(target_path)
 
 
 def call_ai(text, num):
