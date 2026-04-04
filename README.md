@@ -13,7 +13,7 @@ The "challenges" folder should contain one folder per challenge that has to be p
 
 Any challenge should include Docker files to check the project on a controlled environment. Docker files that are mandatory:
 "docker-challenge.sh", with the docker compose commands, "docker-compose.yml" with the instructions to compose the docker and a "Dockerfile"
-where the docker is described. This files should be just under the root of the challenge.
+where the docker is described. This files should be just under the root of the challenge. To check if the challenge is healthy, it should have a healthcheck inside the "docker-compose.yml"
 
 Lastly, it should include a folder named "resources" on any part of the challenge where the code should take the frontend. In that folder, the
 LLM code would be written when crafted. In that folder, should exist a "static" folder, and a "templates" folder if templates are needed.
