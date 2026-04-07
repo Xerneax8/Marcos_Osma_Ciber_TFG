@@ -19,7 +19,6 @@ PENALTIES = {
     },
     'js': {
         'console_logs': 5,
-        'eval_usage': 20,
         'var_usage': 2,
         'debugger': 10
     }
@@ -110,20 +109,17 @@ def analyze_web_code(file_path):
         clean_content = re.sub(r'/\*.*?\*/|//.*', '', raw_content, flags=re.DOTALL)
 
         console_logs = len(re.findall(r'console\.(log|warn|error|info|table)\s*\(', clean_content))
-        eval_usage = len(re.findall(r'\beval\s*\(', clean_content))
         var_usage = len(re.findall(r'\bvar\s+\w+', clean_content))
         debugger_usage = len(re.findall(r'\bdebugger\s*;?', clean_content))
 
         metrics.update({
             'Console Logs': console_logs,
-            'Dangerous eval() usage': eval_usage,
             'Outdated var usage': var_usage,
             'Leftover debugger tags': debugger_usage
         })
 
         score -= (
                 (console_logs * PENALTIES['js']['console_logs']) +
-                (eval_usage * PENALTIES['js']['eval_usage']) +
                 (var_usage * PENALTIES['js']['var_usage']) +
                 (debugger_usage * PENALTIES['js']['debugger'])
         )
