@@ -19,7 +19,6 @@ PENALTIES = {
     },
     'js': {
         'console_logs': 5,
-        'todos': 2,
         'eval_usage': 20,
         'var_usage': 2,
         'debugger': 10
@@ -108,7 +107,6 @@ def analyze_web_code(file_path):
 
     # 3. JavaScript Analysis
     elif ext == '.js':
-        todos = len(re.findall(r'//\s*TODO|/\*\s*TODO', raw_content, re.IGNORECASE))
         clean_content = re.sub(r'/\*.*?\*/|//.*', '', raw_content, flags=re.DOTALL)
 
         console_logs = len(re.findall(r'console\.(log|warn|error|info|table)\s*\(', clean_content))
@@ -118,7 +116,6 @@ def analyze_web_code(file_path):
 
         metrics.update({
             'Console Logs': console_logs,
-            'TODO Comments': todos,
             'Dangerous eval() usage': eval_usage,
             'Outdated var usage': var_usage,
             'Leftover debugger tags': debugger_usage
@@ -126,7 +123,6 @@ def analyze_web_code(file_path):
 
         score -= (
                 (console_logs * PENALTIES['js']['console_logs']) +
-                (todos * PENALTIES['js']['todos']) +
                 (eval_usage * PENALTIES['js']['eval_usage']) +
                 (var_usage * PENALTIES['js']['var_usage']) +
                 (debugger_usage * PENALTIES['js']['debugger'])
