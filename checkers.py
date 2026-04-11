@@ -3,15 +3,15 @@ import subprocess
 import time
 from pathlib import Path
 import shutil
-
+import yaml
+import urllib.request
+import urllib.error
 from AI import check_ai, parser_ai
 from util import find_resources_folder
 
 
-def check_deployment_and_health(directory, timeout=60):
-    """
-    Deploys a Docker container using a shell script and checks its health.
-    """
+# Deploys a Docker container using a shell script and checks its health.
+def check_deployment_and_health(directory, check_frontend, timeout=60):
     parent_directory = os.getcwd()
     if not parent_directory:
         print("Error: PWD environment variable not set.")
@@ -54,8 +54,13 @@ def check_deployment_and_health(directory, timeout=60):
                         print(f"Health check FAILED: {status}")
                         return "UNHEALTHY"
 
-                    elif  "healthy" in status:
+                    elif "healthy" in status:
                         print(f"Health check PASSED: {status}")
+                        if check_frontend:
+                            frontend_status = check_frontend_health("docker-compose.yml")
+                            if frontend_status != "OK":
+                                print("Error rendering frontend")
+                                return frontend_status
                         return "OK"
 
                     elif "starting" in status:
@@ -85,6 +90,32 @@ def check_deployment_and_health(directory, timeout=60):
         print(f"Returned to directory: {parent_directory}\n")
 
 
+def check_frontend_health(filename):
+    try:
+        # Load the YAML file
+        with open(filename, 'r') as file:
+            compose_data = yaml.safe_load(file)
+
+        # Grab the service's port, split by ':', and take the host port
+        first_service = next(iter(compose_data['services'].values()))
+        target_port = first_service['ports'][0].split(':')[0]
+
+        # Fetch the frontend
+        url = f"http://localhost:{target_port}"
+        with urllib.request.urlopen(url, timeout=5) as response:
+            html_content = response.read().decode('utf-8').lower()
+
+        # Check for keywords
+        if "error" in html_content or "exception" in html_content:
+            return "UNHEALTHY"
+
+        return "OK"
+
+    except Exception as e:
+        # Catch file missing, bad YAML, missing keys, etc.
+        return f"ERROR: {str(e)}"
+
+
 # Retrying generating LLM code if errors are found
 def generate_retry(num, ret_str, llm_text, directory, dir_versions_complete_path, dir_versions_name, num_retries,
                    directory_args, max_retries):
@@ -101,7 +132,7 @@ def generate_retry(num, ret_str, llm_text, directory, dir_versions_complete_path
                                                                                              str(directory) + f"-{num + 1}"))))
 
         ret_str = check_deployment_and_health(
-            Path(dir_versions_name) / Path(str(directory) + f"-{num + 1}"))
+            Path(dir_versions_name) / Path(str(directory) + f"-{num + 1}"), check_frontend=True)
         num_retries += 1
 
     if ret_str != "OK":

@@ -23,7 +23,7 @@ def create_different_versions(result, dir_versions_complete_path, directory, dir
                                                                                              str(directory) + f"-{num + 1}"))))
         print(f"Checking code for version {num + 1}...")
         ret_str = check_deployment_and_health(
-            Path(dir_versions_name) / Path(str(directory) + f"-{num + 1}"))
+            Path(dir_versions_name) / Path(str(directory) + f"-{num + 1}"), check_frontend=True)
         num_retries = 0
         generate_retry(num, ret_str, llm_text, directory, dir_versions_complete_path, dir_versions_name, num_retries,
                        directory_args, max_retries)
