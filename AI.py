@@ -77,7 +77,7 @@ def call_ai(text, num):
                         
                         OUTPUT REQUIREMENTS:
                         Retrieve only the raw code. Only text. 
-                        Precede every file code block with a single line indicating its path (e.g, static/file.html or templates/file.html). This is CRITICAL. The 'static' folder has nothing more inside. Do not indicate the type of the file before creating it.
+                        Precede every file code block with a single line indicating its path (e.g, static/file.html or templates/file.html). This is CRITICAL. The 'static' folder has nothing more inside. Omit the type of the file before creating it.
                         Every HTML file must have exactly one corresponding CSS file (1:1 ratio). IMPORTANT.
                         Always include an 'index.html'. 
                         Implement each file independently.
@@ -115,7 +115,7 @@ def check_ai(llm_text, error):
         contents=[{
             "role": "user",
             "parts": [{
-                "text": f"You give me this code and it is throwing that error, retrieve the correct code with the same"
+                "text": f"The code is throwing that error, retrieve the correct code with the same"
                         f"format, this last part is really important."
                         f"CODE:"
                         f"{llm_text}"

@@ -32,7 +32,7 @@ def create_different_versions(result, dir_versions_complete_path, directory, dir
 # Process each challenge
 def process_challenge(directory, num_versions, directory_args, max_retries):
     dir_versions_name = directory + "-versions"
-    dir_versions_complete_path = Path(os.path.dirname(os.path.abspath(sys.argv[0]))) / dir_versions_name
+    dir_versions_complete_path = Path(os.path.dirname(os.path.abspath(sys.argv[0]))) / Path(directory_args) / dir_versions_name
     directory_name = directory
     directory_og_path = Path(directory_args) / Path(directory)
 
