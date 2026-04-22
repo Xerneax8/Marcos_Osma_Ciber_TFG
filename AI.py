@@ -86,7 +86,7 @@ def call_ai(text, num):
                         
                         TECHNICAL CONSTRAINTS:
                         Use {template} syntax, use the static folder if it mentions no template syntax. 
-                        Ensure variables are optional in HTML. And minimize the number of variable sif using a template.
+                        Ensure variables are optional in HTML. And minimize the number of variable when using a template.
                         The variable name form should be avoided in HTML, and avoid block titles.
                         Use JavaScript ONLY for UI aesthetics. 
                         Keep the contents of an endpoint in those endpoints.
