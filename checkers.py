@@ -103,13 +103,12 @@ def check_frontend_health(filename):
         # Fetch the frontend
         url = f"http://localhost:{target_port}"
         with urllib.request.urlopen(url, timeout=5) as response:
-            html_content = response.read().decode('utf-8').lower()
+            status = response.getcode()
 
-        # Check for keywords
-        if "error" in html_content or "exception" in html_content:
-            return "UNHEALTHY"
-
-        return "OK"
+            if status == 200:
+                return "OK"
+            else:
+                return f"Returned error code (HTTP {status})"
 
     except Exception as e:
         # Catch file missing, bad YAML, missing keys, etc.
