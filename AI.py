@@ -11,7 +11,7 @@ from util import take_style, take_theme
 # Parse AI response
 def parser_ai(all_text: str, directory: Path):
     all_text = all_text.replace("`", "")
-    pattern = r"([^\n]+\.(?:html|css))\s*\n\s*(?:html|css)\s*\n([\s\S]*?)(?=\n[^\n]+\.(?:html|css)\s*\n\s*(?:html|css)|\Z)"
+    pattern = r"(?m)^((?:static|templates)/[^\n]+)\n([\s\S]*?)(?=^(?:static|templates)/[^\n]+|\Z)"
 
     matches = re.findall(pattern, all_text)
     if not matches:
@@ -81,14 +81,15 @@ def call_ai(text, num):
                         Every HTML file must have exactly one corresponding CSS file (1:1 ratio). IMPORTANT.
                         Always include an 'index.html'. 
                         Implement each file independently.
-                        Design the website using text-only content.
+                        Design the website using text-only content, without images.
                         Minimize the number of output files.
                         
                         TECHNICAL CONSTRAINTS:
                         Use {template} syntax, use the static folder if it mentions no template syntax. 
                         Ensure variables are optional in HTML. And minimize the number of variable sif using a template.
                         The variable name form should be avoided in HTML, and avoid block titles.
-                        Use JavaScript only for UI aesthetics. 
+                        Use JavaScript ONLY for UI aesthetics. 
+                        Keep the contents of an endpoint in those endpoints.
                         If a CSRF token appears in the text, send it as a HIDDEN field in HTML forms in the HTML, use them if the user has to introduce credentials. REALLY IMPORTANT to be hidden with HTML tag.
                         Ignore healthchecks.
                         Always give feedback if there is a login if the login was succesful or not.
